@@ -1,11 +1,9 @@
 #include <FastLED.h>
 #include <WiFi.h>
-// #include "time.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <TFT_eSPI.h> // Hardware-specific library
 #include <SPI.h>
-// #define NUM_LEDS = num_leds
 #define DATA_PIN 2
 // #include "Free_Fonts.h" // Include the header file attached to this sketch
 
@@ -108,9 +106,6 @@ void buildMetar()
     tft.setCursor(xpos, ypos);    // Set cursor near top left corner of screen
     tft.setTextSize(12);
     tft.drawString(String(lArray[1].fc), 10, 10);   // Select the orginal small GLCD font by using NULL or GLCD
-
-  
-    // Free resources
     http.end();
   } else {
     Serial.print("Not Connected");
