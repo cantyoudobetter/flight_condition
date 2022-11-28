@@ -22,17 +22,23 @@ typedef struct {
   int fc;
 } ledArray;
 
-ledArray lArray[] = { 
-                      {"KSGR",0,0}, 
-                      {"KHOU",1,0}, 
-                      {"KDAL",2,0}, 
-                      {"KAUS",3,0}, 
-                      {"KSAT",4,0}, 
-                      {"KEDC",5,0}, 
-                      {"KLBX",6,0} 
+ledArray lArray[] = {
+                      {"VOID",0,4},
+                      {"KSGR",1,0}, 
+                      {"VOID",2,4},
+                      {"KHOU",3,0}, 
+                      {"KDAL",4,0}, 
+                      {"VOID",5,4},
+                      {"VOID",6,4},
+                      {"KAUS",7,0}, 
+                      {"VOID",8,4},
+                      {"KSAT",9,0}, 
+                      {"KEDC",10,0}, 
+                      {"KLBX",11,0} 
                     };
 
-const int num_leds = (int)sizeof(lArray)/sizeof(lArray[0]);
+const int num_leds = 50;
+//const int num_leds = (int)sizeof(lArray)/sizeof(lArray[0]);
 CRGB leds[num_leds];
 
 void setup() {
@@ -49,7 +55,7 @@ void setup() {
   tft.setRotation(1);
 }
 void loop() {
-  buildMetar();
+  //buildMetar();
   LightLEDs();
   delay(10000);
 }
@@ -57,11 +63,16 @@ void loop() {
 
 void LightLEDs() 
 {
+  // for (int x = 0; x < num_leds; x++) {  
+  //   if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB::Green;
+  //   if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
+  //   if (lArray[x].fc == 2) leds[lArray[x].led_id] = CRGB::Red;
+  //   if (lArray[x].fc > 2) leds[lArray[x].led_id] = CRGB::Black;
+  // }
   for (int x = 0; x < num_leds; x++) {  
-    if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB::Green;
-    if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
-    if (lArray[x].fc == 2) leds[lArray[x].led_id] = CRGB::Red;
+    leds[x] = CRGB::Green;
   }
+
   FastLED.show();
 }
 
@@ -72,25 +83,27 @@ void buildMetar()
   if(WiFi.status()== WL_CONNECTED){
     HTTPClient http;
     for (int x = 0; x < num_leds; x++) {
-      // char[] airport = lArray[x].airport;
-      String airport_str(lArray[x].airport);
-      String serverPath = "https://api.checkwx.com/metar/"+airport_str+"/decoded?x-api-key=f953033170224830a32fcd07dc";
-      http.begin(serverPath.c_str());
-      int httpResponseCode = http.GET();
-      
-      if (httpResponseCode>0) {
-        String str = http.getString(); 
-        DynamicJsonDocument doc(2048);
-        deserializeJson(doc, str);
-        const char* fc = doc["data"][0]["flight_category"];
-        lArray[x].fc = 0;
-        if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
-        if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
-        if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
+      if (lArray[x].fc < 4) {
+        // char[] airport = lArray[x].airport;
+        String airport_str(lArray[x].airport);
+        String serverPath = "https://api.checkwx.com/metar/"+airport_str+"/decoded?x-api-key=f953033170224830a32fcd07dc";
+        http.begin(serverPath.c_str());
+        int httpResponseCode = http.GET();
+        
+        if (httpResponseCode>0) {
+          String str = http.getString(); 
+          DynamicJsonDocument doc(2048);
+          deserializeJson(doc, str);
+          const char* fc = doc["data"][0]["flight_category"];
+          lArray[x].fc = 0;
+          if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
+          if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
+          if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
 
-      } else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
+        } else {
+          Serial.print("Error code: ");
+          Serial.println(httpResponseCode);
+        }
       }
     }
 
