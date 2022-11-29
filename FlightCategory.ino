@@ -23,22 +23,60 @@ typedef struct {
 } ledArray;
 
 ledArray lArray[] = {
-                      {"VOID",0,4},
-                      {"KSGR",1,0}, 
-                      {"VOID",2,4},
-                      {"KHOU",3,0}, 
-                      {"KDAL",4,0}, 
-                      {"VOID",5,4},
-                      {"VOID",6,4},
-                      {"KAUS",7,0}, 
-                      {"VOID",8,4},
-                      {"KSAT",9,0}, 
-                      {"KEDC",10,0}, 
-                      {"KLBX",11,0} 
+                      {"KLBX",0,4},
+                      {"VOID",1,4},
+                      {"KGLS",2,4}, 
+                      {"KEFD",3,4}, 
+                      {"KHOU",4,4}, 
+                      {"KAXH",5,4}, 
+                      {"KLVJ",6,4}, 
+                      {"KHPY",7,4}, 
+                      {"KIAH",8,4}, 
+                      {"KDWH",9,4}, 
+                      {"KCXO",10,4}, 
+                      {"KGR3",11,4}, 
+                      {"K00R",12,4}, 
+                      {"VOID",13,4},
+                      {"KUTS",14,4}, 
+                      {"K51R",15,4}, 
+                      {"KCFD",16,4}, 
+                      {"KCLL",17,4}, 
+                      {"K11R",18,4}, 
+                      {"VOID",19,4},
+                      {"KTME",20,4}, 
+                      {"KIWS",21,4}, 
+                      {"KSGR",22,4}, 
+                      {"VOID",23,4},
+                      {"KELA",24,4}, 
+                      {"KARM",25,4}, 
+                      {"KBYY",26,4}, 
+                      {"KPSX",27,4}, 
+                      {"KPKV",28,4}, 
+                      {"KVCT",29,4}, 
+                      {"VOID",30,4}, 
+                      {"K2R9",31,4}, 
+                      {"VOID",32,4}, 
+                      {"KSAT",33,4}, 
+                      {"KBAZ",34,4},
+                      {"K50R",35,4}, 
+                      {"KAUS",36,4}, 
+                      {"KEDC",37,4}, 
+                      {"KGTU",38,4},
+                      {"VOID",39,4}, 
+                      {"KTPL",40,4}, 
+                      {"VOID",41,4}, 
+                      {"VOID",42,4}, 
+                      {"KRWV",43,4}, 
+                      {"KGYB",44,4}, 
+                      {"K3T5",45,4}, 
+                      {"VOID",46,4}, 
+                      {"KT85",47,4}, 
+                      {"VOID",48,4},
+                      {"K26R",49,4} 
                     };
 
-const int num_leds = 50;
-//const int num_leds = (int)sizeof(lArray)/sizeof(lArray[0]);
+//const int num_leds = 50;
+const int num_leds = (int)sizeof(lArray)/sizeof(lArray[0]);
 CRGB leds[num_leds];
 
 void setup() {
@@ -55,23 +93,23 @@ void setup() {
   tft.setRotation(1);
 }
 void loop() {
-  //buildMetar();
+  buildMetar();
   LightLEDs();
-  delay(10000);
+  delay(1000*60*25);
 }
 
 
 void LightLEDs() 
 {
-  // for (int x = 0; x < num_leds; x++) {  
-  //   if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB::Green;
-  //   if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
-  //   if (lArray[x].fc == 2) leds[lArray[x].led_id] = CRGB::Red;
-  //   if (lArray[x].fc > 2) leds[lArray[x].led_id] = CRGB::Black;
-  // }
   for (int x = 0; x < num_leds; x++) {  
-    leds[x] = CRGB::Green;
+    if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB::Green;
+    if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
+    if (lArray[x].fc == 2) leds[lArray[x].led_id] = CRGB::Red;
+    if (lArray[x].fc > 2) leds[lArray[x].led_id] = CRGB::Black;
   }
+  // for (int x = 0; x < 50; x++) {  
+  //   leds[x] = CRGB::Green;
+  // }
 
   FastLED.show();
 }
@@ -83,9 +121,10 @@ void buildMetar()
   if(WiFi.status()== WL_CONNECTED){
     HTTPClient http;
     for (int x = 0; x < num_leds; x++) {
-      if (lArray[x].fc < 4) {
+      if (lArray[x].airport != "VOID") {
         // char[] airport = lArray[x].airport;
         String airport_str(lArray[x].airport);
+        // Serial.println(airport_str);
         String serverPath = "https://api.checkwx.com/metar/"+airport_str+"/decoded?x-api-key=f953033170224830a32fcd07dc";
         http.begin(serverPath.c_str());
         int httpResponseCode = http.GET();
@@ -94,13 +133,19 @@ void buildMetar()
           String str = http.getString(); 
           DynamicJsonDocument doc(2048);
           deserializeJson(doc, str);
-          const char* fc = doc["data"][0]["flight_category"];
-          lArray[x].fc = 0;
-          if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
-          if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
-          if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
+          const int res_count = doc["results"];
+          // Serial.print("Res count:");
+          // Serial.println(res_count);
+          if (res_count > 0) {
+            const char* fc = doc["data"][0]["flight_category"];
+            lArray[x].fc = 0;
+            if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
+            if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
+            if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
+          }
 
         } else {
+          lArray[x].fc = 4;
           Serial.print("Error code: ");
           Serial.println(httpResponseCode);
         }
