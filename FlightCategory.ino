@@ -84,8 +84,8 @@ CRGB leds[num_leds];
 
 void setup() {
   Serial.begin(115200);
-  // WiFi.begin(ssid, password);
-  WiFi.begin("Wokwi-GUEST", "", 6);
+  WiFi.begin(ssid, password);
+  // WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
@@ -201,7 +201,7 @@ void buildDisplay()
         }
         tft.fillScreen(TFT_BLACK);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
+        tft.setTextSize (3);  
         // Show the resulting substrings
         for (int i = 2; i < StringCount; i++)
         {
@@ -213,7 +213,7 @@ void buildDisplay()
           if (strs[i] == "RMK")  {break;}
           if (i > 6) {break;}
           
-          tft.drawString(strs[i], 10, 10*i, 8);   // Select the orginal small GLCD font by using NULL or GLCD
+          tft.drawString(strs[i], 10, (10+(30*(i-2))));   // Select the orginal small GLCD font by using NULL or GLCD
 
 
           Serial.print(i);
