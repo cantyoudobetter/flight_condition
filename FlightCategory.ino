@@ -85,7 +85,7 @@ CRGB leds[num_leds];
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
-  // WiFi.begin("Wokwi-GUEST", "", 6);
+  //WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
@@ -107,7 +107,7 @@ void loop() {
 void LightLEDs() 
 {
   for (int x = 0; x < num_leds; x++) {  
-    if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB::Green;
+    if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB(0, 100, 0);
     if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
     if (lArray[x].fc == 2) leds[lArray[x].led_id] = CRGB::Red;
     if (lArray[x].fc > 2) leds[lArray[x].led_id] = CRGB::Black;
@@ -213,7 +213,20 @@ void buildDisplay()
           if (strs[i] == "RMK")  {break;}
           if (i > 6) {break;}
           
-          tft.drawString(strs[i], 10, (10+(30*(i-2))));   // Select the orginal small GLCD font by using NULL or GLCD
+          if (strs[i].indexOf("KT") > 0)  {
+            tft.drawString(strs[i].substring(0,3), 10, 10);
+            Serial.print("DIR:");
+            Serial.println(strs[i].substring(0,3));
+            tft.drawString(strs[i].substring(3), 10, 40);
+            Serial.print("WIND:");
+            Serial.println(strs[i].substring(3));
+
+          } else {
+            tft.drawString(strs[i], 10, (10+(30*(i-1))));
+          }
+
+
+             // Select the orginal small GLCD font by using NULL or GLCD
 
 
           Serial.print(i);
