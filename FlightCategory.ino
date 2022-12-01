@@ -6,6 +6,8 @@
 #include <SPI.h>
 #define DATA_PIN 2
 // #include "Free_Fonts.h" // Include the header file attached to this sketch
+String strs[30];
+int StringCount = 0;
 
 TFT_eSPI tft = TFT_eSPI();                   // Invoke custom library with default width and height
 
@@ -79,9 +81,11 @@ ledArray lArray[] = {
 const int num_leds = (int)sizeof(lArray)/sizeof(lArray[0]);
 CRGB leds[num_leds];
 
+
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(ssid, password);
+  // WiFi.begin(ssid, password);
+  WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
@@ -90,9 +94,10 @@ void setup() {
   Serial.println(WiFi.localIP());
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, num_leds);
   tft.begin();
-  tft.setRotation(1);
+  tft.setRotation(0);
 }
 void loop() {
+  buildDisplay();
   buildMetar();
   LightLEDs();
   delay(1000*60*25);
@@ -151,22 +156,84 @@ void buildMetar()
         }
       }
     }
-
     Serial.println("DUMP: ");
     for (int x = 0; x < num_leds; x++) {
       String out = String(lArray[x].airport) + ":" + String(lArray[x].led_id) + ":" + String(lArray[x].fc);
       Serial.println(out);
     }
-    tft.fillScreen(TFT_BLACK);
-    int xpos =  40;
-    int ypos = 40;
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.setCursor(xpos, ypos);    // Set cursor near top left corner of screen
-    tft.setTextSize(12);
-    tft.drawString(String(lArray[1].fc), 10, 10);   // Select the orginal small GLCD font by using NULL or GLCD
     http.end();
   } else {
     Serial.print("Not Connected");
-  }
+  }  
+
+}
+
+void buildDisplay()
+{
+  if(WiFi.status()== WL_CONNECTED){
+    HTTPClient http;
+    String serverPath = "https://api.checkwx.com/metar/KSGR/decoded?x-api-key=f953033170224830a32fcd07dc";
+    http.begin(serverPath.c_str());
+    int httpResponseCode = http.GET();
+    
+    if (httpResponseCode>0) {
+      String str = http.getString(); 
+      DynamicJsonDocument doc(2048);
+      deserializeJson(doc, str);
+      const int res_count = doc["results"];
+      if (res_count > 0) {
+        const char* raw = doc["data"][0]["raw_text"];
+        String str = String(raw);
+        Serial.println(str);
+        while (str.length() > 0)
+        {
+          int index = str.indexOf(' ');
+          if (index == -1) // No space found
+          {
+            strs[StringCount++] = str;
+            break;
+          }
+          else
+          {
+            strs[StringCount++] = str.substring(0, index);
+            str = str.substring(index+1);
+          }
+        }
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+        // Show the resulting substrings
+        for (int i = 2; i < StringCount; i++)
+        {
+          
+          if (strs[i] == "AUTO") {continue;}
+          if (strs[i].indexOf("Z") > 0)  {continue;}
+          if (strs[i].indexOf("/") > 0)  {continue;}
+          if (strs[i].indexOf("A") == 0)  {continue;}
+          if (strs[i] == "RMK")  {break;}
+          if (i > 6) {break;}
+          
+          tft.drawString(strs[i], 10, 10*i, 8);   // Select the orginal small GLCD font by using NULL or GLCD
+
+
+          Serial.print(i);
+          Serial.print(": \"");
+          Serial.print(strs[i]);
+          Serial.println("\"");
+        }
+
+
+      }
+
+    } else {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+
+
+    http.end();
+  } else {
+    Serial.print("Not Connected");
+  }  
 
 }
