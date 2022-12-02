@@ -153,29 +153,31 @@ void buildMetar()
         // char[] airport = lArray[x].airport;
         String airport_str(lArray[x].airport);
         // Serial.println(airport_str);
+        if (airport_str == "VOID") {continue;}
         String serverPath = "https://avwx.rest/api/metar/"+airport_str+"?options=&airport=true&reporting=true&format=json&remove=&filter=&onfail=cache&token=hcG1LPJ-tkO0P2LIj-9VlhqkbdZNfrSICga0jcltzwM";
         // String serverPath = "https://api.checkwx.com/metar/"+airport_str+"/decoded?x-api-key=f953033170224830a32fcd07dc";
+        Serial.println(serverPath);
         http.begin(serverPath.c_str());
         int httpResponseCode = http.GET();
+        Serial.print("HTTP:");
+        Serial.println(httpResponseCode);        
+        if (httpResponseCode == -11) {continue;}
+        if (httpResponseCode == 204) {continue;}
+        if (httpResponseCode == 400) {continue;}
+        if (httpResponseCode == 404) {continue;}
         
         if (httpResponseCode>0) {
           String str = http.getString(); 
           DynamicJsonDocument doc(2048);
           deserializeJson(doc, str);
-          // const int res_count = doc["results"];
-          const int res_count = 1;
-          // Serial.print("Res count:");
-          // Serial.println(res_count);
-          if (res_count > 0) {
-            const char* fc = doc["flight_rules"];
-            // const char* fc = doc["data"][0]["flight_category"];
-            lArray[x].fc = 0;
-            if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
-            if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
-            if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
-            if (strcmp(fc, "LIFR") == 0)  lArray[x].fc = 3;
-
-          }
+          const char* fc = doc["flight_rules"];
+          Serial.print("FC:");
+          Serial.println(fc);
+          lArray[x].fc = 0;
+          if (strcmp(fc, "VFR") == 0)  lArray[x].fc = 0;
+          if (strcmp(fc, "MVFR") == 0) lArray[x].fc = 1;
+          if (strcmp(fc, "IFR") == 0)  lArray[x].fc = 2;
+          if (strcmp(fc, "LIFR") == 0)  lArray[x].fc = 3;
 
         } else {
           lArray[x].fc = 4;
