@@ -95,17 +95,33 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, num_leds);
   tft.begin();
   tft.setRotation(0);
-}
-void loop() {
   buildDisplay();
   buildMetar();
   LightLEDs();
   delay(1000*60*25);
+  ESP.restart();
 }
+
 
 
 void LightLEDs() 
 {
+  for (int x = 0; x < 50; x++) {  
+    leds[x] = CRGB::Green;
+  }
+  FastLED.show();
+  delay(1000);
+  for (int x = 0; x < 50; x++) {  
+    leds[x] = CRGB::Blue;
+  }
+  FastLED.show();
+  delay(1000);
+  for (int x = 0; x < 50; x++) {  
+    leds[x] = CRGB::Red;
+  }
+  FastLED.show();
+  delay(1000);
+
   for (int x = 0; x < num_leds; x++) {  
     if (lArray[x].fc == 0) leds[lArray[x].led_id] = CRGB(0, 100, 0);
     if (lArray[x].fc == 1) leds[lArray[x].led_id] = CRGB::Blue;
@@ -203,6 +219,7 @@ void buildDisplay()
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextSize (3);  
         // Show the resulting substrings
+        int y_cnt = 0;
         for (int i = 2; i < StringCount; i++)
         {
           
@@ -214,15 +231,17 @@ void buildDisplay()
           if (i > 6) {break;}
           
           if (strs[i].indexOf("KT") > 0)  {
+            tft.setTextSize(4);
             tft.drawString(strs[i].substring(0,3), 10, 10);
-            Serial.print("DIR:");
-            Serial.println(strs[i].substring(0,3));
-            tft.drawString(strs[i].substring(3), 10, 40);
-            Serial.print("WIND:");
-            Serial.println(strs[i].substring(3));
+            // Serial.print("DIR:");
+            // Serial.println(strs[i].substring(0,3));
+            tft.drawString(strs[i].substring(3), 10, 60);
+            // Serial.print("WIND:");
+            // Serial.println(strs[i].substring(3));
 
           } else {
-            tft.drawString(strs[i], 10, (10+(30*(i-1))));
+            tft.setTextSize(3);            
+            tft.drawString(strs[i], 10, (110+(30*y_cnt++)));
           }
 
 
@@ -249,4 +268,11 @@ void buildDisplay()
     Serial.print("Not Connected");
   }  
 
+}
+
+void loop() {
+  // buildDisplay();
+  // buildMetar();
+  // LightLEDs();
+  // delay(1000*60);
 }
