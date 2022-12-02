@@ -98,7 +98,7 @@ void setup() {
   buildDisplay();
   buildMetar();
   LightLEDs();
-  delay(1000*60*20);
+  delay(1000*60*25);
   ESP.restart();
 }
 
@@ -250,11 +250,11 @@ void buildDisplay()
           if (strs[i].indexOf("KT") > 0)  {
             tft.setTextSize(4);
             tft.drawString(strs[i].substring(0,3), 10, 10);
-            Serial.print("DIR:");
-            Serial.println(strs[i].substring(0,3));
+            // Serial.print("DIR:");
+            // Serial.println(strs[i].substring(0,3));
             tft.drawString(strs[i].substring(3), 10, 60);
-            Serial.print("WIND:");
-            Serial.println(strs[i].substring(3));
+            // Serial.print("WIND:");
+            // Serial.println(strs[i].substring(3));
 
           } else {
             tft.setTextSize(3);            
