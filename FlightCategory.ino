@@ -100,6 +100,7 @@ void setup() {
   // delay(1000*60);
   esp_sleep_enable_timer_wakeup(1000*60*20);
   ESP.restart();
+  
 }
 
 
