@@ -98,8 +98,12 @@ void setup() {
   buildMetar();
   LightLEDs();
   // delay(1000*60);
-  esp_sleep_enable_timer_wakeup(1000*60*20);
-  ESP.restart();
+  // Serial.println("going to sleep");
+  // esp_sleep_enable_timer_wakeup(1000000*10);
+  // esp_light_sleep_start();
+  // Serial.println("waking up");
+  // Serial.println("reboot");
+  // ESP.restart();
   
 }
 
@@ -294,8 +298,9 @@ void buildDisplay()
 }
 
 void loop() {
-  // buildDisplay();
-  // buildMetar();
-  // LightLEDs();
-  // delay(1000*60);
+  long currentMillis = millis();
+  if (currentMillis > (1000*60*20)) {
+    Serial.println("reboot");
+    ESP.restart();
+  }
 }
