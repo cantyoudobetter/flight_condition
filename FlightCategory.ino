@@ -9,7 +9,8 @@
 int StringCount = 0;
 
 TFT_eSPI tft = TFT_eSPI();                   // Invoke custom library with default width and height
-
+unsigned long lastMillis = 0;
+int secs = 0;
 unsigned long drawTime = 0;
 const char* ssid       = "TAMU";
 const char* password   = "tamu1993";
@@ -298,9 +299,20 @@ void buildDisplay()
 }
 
 void loop() {
-  long currentMillis = millis();
-  if (currentMillis > (1000*60*20)) {
-    Serial.println("reboot");
-    ESP.restart();
+  const unsigned long currentMillis = millis();
+  unsigned long diff;
+  diff = currentMillis - lastMillis;
+  if (diff > 1000) {
+    lastMillis = currentMillis;
+    tft.setTextSize(1);
+    char sec_s[8];
+    itoa(secs++,sec_s,10);          
+    tft.drawString(sec_s, 10, 220);
+    Serial.println(sec_s);
+    if (secs > 1200) {
+      Serial.println("reboot");
+      ESP.restart();
+    }
   }
+
 }
